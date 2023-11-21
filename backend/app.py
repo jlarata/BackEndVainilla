@@ -16,7 +16,7 @@ CORS(app)
 
 ###localhost app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:d3ctech@localhost/flask'
 ###external 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://ukoh6uwy5swel9sd:QYtYernCB75QgVToEtu@hv-par6-007.clvrcld.net:13705/buznb5wbhr1snd09ehtb'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:d3ctech@localhost/flask'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 """viejo metodo cors app.config['CORS_HEADERS'] = 'Content-Type'"""
 ##app.config['CORS_HEADERS'] = 'Content-Type'
@@ -93,45 +93,12 @@ def get_films():
 
 
 
-###ESTO DEBERIA FUNCIONAR POR EL LADO DEL BACKEND. PROBAR CON POSTMAN Y LUEGO ARMAR METODO EN FRONT.
-### FUNCIONA
 
 @app.route('/adv-get/<field>/<contains>', methods = ['GET'])
 def get_films_by_field_contains(field, contains):
     all_films_contains = Films.query.filter(getattr(Films,field).contains(contains)).order_by(Films.ccNumber).all()
     results = films_schema.dump(all_films_contains)
     return jsonify(results)
-
-"""     if(field == 'director'):
-        all_films_director_contains = Films.query.filter(Films.director.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_director_contains)
-        return jsonify(results)
-    if(field == 'title'):
-        all_films_title_contains = Films.query.filter(Films.title.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_title_contains)
-        return jsonify(results)
-    if(field == 'year'):
-        all_films_year_contains = Films.query.filter(Films.year.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_year_contains)
-        return jsonify(results)
-    if(field == 'host'):
-        all_films_host_contains = Films.query.filter(Films.host.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_host_contains)
-        return jsonify(results)
-    if(field == 'date'):
-        all_films_date_contains = Films.query.filter(Films.date.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_date_contains)
-        return jsonify(results)
-    if(field == 'origin'):
-        all_films_origin_contains = Films.query.filter(Films.origin.contains(contains)).order_by(Films.ccNumber).all()
-        results = films_schema.dump(all_films_origin_contains)
-        return jsonify(results) """
-
-    ###general advanced method:
-    ###if(field == ''):
-    ###    all_films__contains = Films.query.filter(Films..contains(contains)).order_by(Films.ccNumber).all()
-    ###    results = films_schema.dump(all_films__contains)
-    ###    return jsonify(results)
 
 
 @app.route('/get/<id>', methods = ['GET'])
