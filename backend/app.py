@@ -2,7 +2,13 @@ from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from dotenv import load_dotenv
 #import datetime
+
+load_dotenv
+
+import os
+SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
 
 app = Flask(__name__)
 ##cors = CORS(app, resources={r"/*/*": {"origins": "*"}})
@@ -16,7 +22,8 @@ CORS(app)
 
 ###localhost app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:d3ctech@localhost/flask'
 ###external 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:d3ctech@localhost/flask'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:d3ctech@127.0.0.1:3306/flask'
+""" app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI """
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 """viejo metodo cors app.config['CORS_HEADERS'] = 'Content-Type'"""
 ##app.config['CORS_HEADERS'] = 'Content-Type'
@@ -24,6 +31,33 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+
+class Revisores(db.Model):
+    IdRevisor = db.Column(db.Integer, primary_key=True)
+    NombreRevisor = db.Column(db.String(100))
+
+class Inspectores(db.Model):
+    IdInspector = db.Column(db.Integer, primary_key=True)
+    IdRevisor = db.Column(db.Integer, db.ForeignKey(Revisores.IdRevisor), primary_key=True)
+    NombreInspector = db.Column(db.String(100))
+
+class Certificados(db.Model):
+    IdCertificado = db.Column(db.Integer, primary_key=True)
+    IdRevisor = db.Column(db.Integer, db.ForeignKey(Revisores.IdRevisor), primary_key=True)
+    FechaDePresentacion = db.Column(db.Date)
+
+class Obras(db.Model):
+    IdObra = db.Column(db.Integer, primary_key=True)
+    IdRevisor = db.Column(db.Integer, db.ForeignKey(Revisores.IdRevisor), primary_key=True)
+    NombreObra = db.Column(db.String(200))
+    Codificacion = db.Column(db.String(50))
+    FechaContrato = db.Column(db.Date)
+    FechaInicio = db.Column(db.Date)
+    PlazoDias = db.Column(db.Integer)
+    IdInspector = db.Column(db.Integer, db.ForeignKey(Inspectores.IdInspector), primary_key=True)
+    FechaFin = db.Column(db.Date)
+    Prorroga = db.Column(db.Integer)
 
 class Films(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,7 +79,7 @@ class Films(db.Model):
     date = db.Column(db.Date)
     #date = db.Column(db.DateTime, default = datetime.datetime.now)
 
-    def __init__(self, ccNumber, imgUrl, title, year, origin, director1, director1Genre, director2, director2Genre, director3, director3Genre, director4, director4Genre, score, host, date):
+    """ def __init__(self, ccNumber, imgUrl, title, year, origin, director1, director1Genre, director2, director2Genre, director3, director3Genre, director4, director4Genre, score, host, date):
         self.ccNumber = ccNumber
         self.imgUrl = imgUrl
         self.title = title
@@ -61,7 +95,7 @@ class Films(db.Model):
         self.director4Genre = director4Genre
         self.score = score
         self.host = host
-        self.date = date
+        self.date = date """
 
 
 class FilmSchema(ma.Schema):
@@ -70,6 +104,13 @@ class FilmSchema(ma.Schema):
 
 film_schema = FilmSchema()
 films_schema = FilmSchema(many=True)
+
+class RevisorSchema(ma.Schema):
+    class Meta:
+        fields = ('IdRevisor', 'NombreRevisor')
+
+revisor_schema = RevisorSchema()
+revisores_schema = RevisorSchema(many=True)
 
 """viejo metodo cors@app.route("/get", methods = ["GET"])
 def helloWorld():
@@ -80,6 +121,12 @@ def helloWorld():
           results = films_schema.dump(all_films)
           return _corsify_actual_response(jsonify(results))"""
             
+
+@app.route('/get/revisores', methods = ['GET'])
+def get_revisores():
+    all_revisores_by_IdRevisor = Revisores.query.order_by(Revisores.IdRevisor).all()
+    results = revisores_schema.dump(all_revisores_by_IdRevisor)
+    return jsonify(results)
 
 @app.route('/get', methods = ['GET'])
 def get_films():
